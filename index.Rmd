@@ -174,7 +174,7 @@ card <- function(x, width) {
   
   
   withTags(
-    li(class = "cards_item", style = glue("width: {width}%;"),
+    li(class = "cards_item", # style = glue("width: {width}%;"),
     div(class = "card", style = glue("background: {x$color};"),
         div(class = "card_content", 
             style = glue("background: {x$color};"),
