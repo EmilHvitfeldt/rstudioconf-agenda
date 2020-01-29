@@ -21,6 +21,7 @@ library(glue)
 library(paletteer)
 library(prismatic)
 library(htmltools)
+library(slider)
 
 pal <- paletteer_d("Polychrome::alphabet") %>%
   clr_lighten(space = "combined", 0.8)
@@ -29,8 +30,18 @@ agenda <- read_rds("agenda.rds") %>%
   dplyr::filter(Start > "2020-01-29") %>%
   mutate(color = pal[as.numeric(fct_explicit_na(as.factor(Category)))])
 
-whole_agenda <- agenda %>%
-  split(agenda$Start) %>%
+wednesday <- agenda %>%
+  filter(lubridate::day(Start) == 29)
+
+thursday <- agenda %>%
+  filter(lubridate::day(Start) == 30)
+
+whole_agenda_wednesday <- wednesday %>%
+  split(wednesday$Start) %>%
+  map(~ .x %>% arrange(Category))
+
+whole_agenda_thursday <- thursday %>%
+  split(thursday$Start) %>%
   map(~ .x %>% arrange(Category))
 ```
 
@@ -190,16 +201,21 @@ card <- function(x, width) {
 }
 
 card_row <- function(df) {
-  start <- df$Start[1]
-  end <- str_remove(df$End[1], '\\d{4}-\\d{2}-\\d{2} ')
+  start <- format(df$Start[1], format = '%H:%M')
+  end <- format(df$End[1], format = '%H:%M')
   div(h3(glue("Time: {start} - {end}")),
-  div(class = "cards", slide::slide(df, card, width = 100 / nrow(df)))
+  div(class = "cards", slider::slide(df, card, width = 100 / nrow(df)))
   )
 }
 ```
 
 ```{r}
+h1("Wednesday")
 div(
-  map(whole_agenda, card_row)
+  map(whole_agenda_wednesday, card_row)
+)
+h1("Thursday")
+div(
+  map(whole_agenda_thursday, card_row)
 )
 ```
